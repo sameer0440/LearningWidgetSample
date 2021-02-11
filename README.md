@@ -10,7 +10,8 @@ Steps to deploy
 
 #### Add this section to the desktop layout json in nav-bar section
 
- ```"comp1": 
+ ```
+ "comp1": 
  {
                "comp": "learning-sample",
               "script": "https://widget-kad.s3.amazonaws.com/TestCode/bundle.js"
