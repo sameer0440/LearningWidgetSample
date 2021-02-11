@@ -1,6 +1,8 @@
 import { Desktop } from "@wxcc-desktop/sdk";
 import { Service } from "@wxcc-desktop/sdk-types";
 const template = document.createElement('template')
+const logger = Desktop.logger.createLogger("learning-sample");
+
 template.innerHTML = `
 <div>
 <fieldset id="userfieldset" class="outline">
@@ -36,7 +38,7 @@ template.innerHTML = `
     <div><b> To Address: </b><span id="toAddress"></div>
     <div><b> Call State: </b><span id="callState"></div>
     <br>
-    <iframe name="bing" id="bing" width="900" height="300" src="https://www.bing.com/"></iframe>
+    <iframe name="bing" id="bing" width="100%" height="900" src="https://www.bing.com/"></iframe>
 </fieldset>
 </div>
 `
@@ -79,7 +81,8 @@ state = {
     
       async init() {
         await Desktop.config.init();
-        console.log('init')
+        logger.info('init')
+        
         this.shadowRoot.querySelector('#goAvailable').addEventListener('click', () => this.changeState("Available"))
         this.shadowRoot.querySelector('#goUnavailable').addEventListener('click', () => this.changeState("Idle"))
         this.shadowRoot.querySelector('#makeCallButton').addEventListener('click', () => this.makeCall())
@@ -95,22 +98,21 @@ state = {
         while( i<=auxCount-1)
         {
 
-         if(Desktop.agentStateInfo.latestData.idleCodes[i].isDefault == 'true') 
-         {  
+          logger.info("AuxCode list ", Desktop.agentStateInfo.latestData.idleCodes[i].id)
           
+         if(Desktop.agentStateInfo.latestData.idleCodes[i].isDefault==true) 
+         {           
            this.state.defaultAuxCode = Desktop.agentStateInfo.latestData.idleCodes[i].id
-           console.log(" defaultAuxCode is  ",this.state.defaultAuxCode)
+           logger.info(" default aux found ", this.state.defaultAuxCode)
            break;
-
-         }
-       
-          i++ 
+         }       
+         i++ 
         }
       }
 
       async changeState(s: "Available" | "Idle") {
-        console.log('going to state ',s)
-        console.log('latestData',Desktop.agentStateInfo.latestData)
+        logger.info('moving to state ',s)
+        logger.info('latestData',Desktop.agentStateInfo.latestData)
         if(s=="Available")
             {
          
@@ -119,19 +121,19 @@ state = {
                     auxCodeIdArray: "0",
                   });
 
-                  console.log("State Changed", agentState);
+                  logger.info("State Changed", agentState);
                   
                   
             }
             if(s=="Idle")
             {
-            console.log(s)
+            logger.info(s)
                const agentState = await Desktop.agentStateInfo.stateChange({
                     state: s,
                     auxCodeIdArray : this.state.defaultAuxCode
                   });
-                  console.log("State Changed to Idle", Desktop.agentStateInfo.latestData.idleCodes[3].id);
-                  console.log(Desktop.agentStateInfo.latestData.idleCodes[3].id)
+                  logger.info("State Changed to Idle", this.state.defaultAuxCode)
+                //  logger.info(Desktop.agentStateInfo.latestData.idleCodes[3].id)
                  
             }   
             this.shadowRoot.querySelector('#userState').innerHTML = Desktop.agentStateInfo.latestData.subStatus
@@ -142,26 +144,26 @@ state = {
         async getAgentInfo() {
             const latestData = Desktop.agentStateInfo.latestData;
             const agentName = Desktop.agentStateInfo.latestData.agentName
-            console.log("learning-sample IdleCodes: " , latestData );
+            logger.info("learning-sample IdleCodes: " , latestData );
           }
 
 
 
           subscribeAgentContactDataEvents() {
             Desktop.agentContact.addEventListener("eAgentContact", (msg: Service.Aqm.Contact.AgentContact) =>
-              console.log("AgentContact eAgentContact: ", msg)
+              logger.info("AgentContact eAgentContact: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentContactAssigned",
               (msg: Service.Aqm.Contact.AgentContact) => {
-                console.log("AgentContact eAgentContactAssigned: ", msg);
+                logger.info("AgentContact eAgentContactAssigned: ", msg);
                
               }
             );
             Desktop.agentContact.addEventListener(
               "eAgentContactEnded",
               (msg: Service.Aqm.Contact.AgentContact) => {
-                console.log("AgentContact eAgentContactEnded: ", msg);
+                logger.info("AgentContact eAgentContactEnded: ", msg);
 
                 this.shadowRoot.querySelector('#interactionId').innerHTML = ""
                 this.shadowRoot.querySelector('#interactionType').innerHTML = ""
@@ -174,12 +176,12 @@ state = {
             );
             Desktop.agentContact.addEventListener(
               "eAgentContactWrappedUp",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentContactWrappedUp: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentContactWrappedUp: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentOfferContact",
               (msg: Service.Aqm.Contact.AgentContact) => {
-                console.log("AgentContact eAgentOfferContact: ", msg);
+                logger.info("AgentContact eAgentOfferContact: ", msg);
                  this.interactionId = msg.data.interaction.interactionId
                  this.mediaType = msg.data.interaction.mediaType
                  this.dnis =  msg.data.interaction.callProcessingDetails.dnis
@@ -201,7 +203,7 @@ state = {
             Desktop.agentContact.addEventListener(
               "eAgentOfferContactRona",
               (msg: Service.Aqm.Contact.AgentContact) => {
-                console.log("AgentContact eAgentOfferContactRona: ", msg);
+                logger.info("AgentContact eAgentOfferContactRona: ", msg);
                   
                 this.shadowRoot.querySelector('#interactionId').innerHTML = ""
                 this.shadowRoot.querySelector('#interactionType').innerHTML = ""
@@ -214,66 +216,66 @@ state = {
             );
             Desktop.agentContact.addEventListener(
               "eAgentOfferConsult",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentOfferConsult: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentOfferConsult: ", msg)
             );
             Desktop.agentContact.addEventListener("eAgentWrapup", (msg: Service.Aqm.Contact.AgentContact) =>
-              console.log("AgentContact eAgentWrapup: ", msg)
+              logger.info("AgentContact eAgentWrapup: ", msg)
             );
             Desktop.agentContact.addEventListener("eAgentContactHeld", (msg: Service.Aqm.Contact.AgentContact) =>
-              console.log("AgentContact eAgentContactHeld: ", msg)
+              logger.info("AgentContact eAgentContactHeld: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentContactUnHeld",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentContactUnHeld: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentContactUnHeld: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eCallRecordingStarted",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eCallRecordingStarted: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eCallRecordingStarted: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentConsultCreated",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentConsultCreated: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentConsultCreated: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentConsultConferenced",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentConsultConferenced: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentConsultConferenced: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentConsultEnded",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentConsultEnded: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentConsultEnded: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentCtqCancelled",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentCtqCancelled: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentCtqCancelled: ", msg)
             );
             Desktop.agentContact.addEventListener("eAgentConsulting", (msg: any) =>
-              console.log("AgentContact eAgentConsulting: ", msg)
+              logger.info("AgentContact eAgentConsulting: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentConsultFailed",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentConsultFailed: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentConsultFailed: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentConsultEndFailed",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentConsultEndFailed: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentConsultEndFailed: ", msg)
             );
             Desktop.agentContact.addEventListener("eAgentCtqFailed", (msg: any) =>
-              console.log("AgentContact eAgentCtqFailed: ", msg)
+              logger.info("AgentContact eAgentCtqFailed: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentCtqCancelFailed",
-              (msg: Service.Aqm.Contact.AgentContact) => console.log("AgentContact eAgentCtqCancelFailed: ", msg)
+              (msg: Service.Aqm.Contact.AgentContact) => logger.info("AgentContact eAgentCtqCancelFailed: ", msg)
             );
             Desktop.agentContact.addEventListener(
               "eAgentConsultConferenceEndFailed",
               (msg: Service.Aqm.Contact.AgentContact) =>
-                console.log("AgentContact eAgentConsultConferenceEndFailed: ", msg)
+                logger.info("AgentContact eAgentConsultConferenceEndFailed: ", msg)
             );
           }
                
 
     subscribeDialerEvents() {
-            Desktop.dialer.addEventListener("eOutdialFailed", (msg: Service.Aqm.Contact.AgentContact) => console.log(msg));
+            Desktop.dialer.addEventListener("eOutdialFailed", (msg: Service.Aqm.Contact.AgentContact) => logger.info(msg));
        }
 
      makeCall(){
