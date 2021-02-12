@@ -2,11 +2,11 @@
     "name": "webex-contact-center-widget-starter",
     "version": "1.0.0",
     "author": {
-        "name": "Yana Harris",
-        "email": "yanaha@cisco.com"
+        "name": "Sameer Kumar",
+        "email": "sameyada@cisco.com"
     },
     "license": "MIT",
-    "repository": "git@github.com:CiscoDevNet/webex-contact-center-widget-starter.git",
+    "repository": "https://github.com/sameyada/LearningWidgetSample.git ",
     "main": "./dist/index.js",
     "types": "./dist/types/index.d.ts",
     "scripts": {
