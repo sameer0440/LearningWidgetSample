@@ -1,7 +1,6 @@
 import { Desktop } from "@wxcc-desktop/sdk";
 import { Service } from "@wxcc-desktop/sdk-types";
 const template = document.createElement('template')
-const logger = Desktop.logger.createLogger("learning-sample");
 
 template.innerHTML = `
 <div>
@@ -42,6 +41,10 @@ template.innerHTML = `
 </fieldset>
 </div>
 `
+
+//Creating a custom logger
+const logger = Desktop.logger.createLogger("learning-sample");
+
 class LearningSample extends HTMLElement {
   interactionId: any;
   interactionType: any;
@@ -70,6 +73,7 @@ state = {
         this.init();
         this.subscribeAgentContactDataEvents()
         this.subscribeDialerEvents();
+        this.getAgentInfo();
 
         
  
@@ -80,21 +84,24 @@ state = {
       }
     
       async init() {
-        await Desktop.config.init();
-        logger.info('init')
+        // Initiating desktop config
+
+        await Desktop.config.init();   
         
+        // Adding function to click operation of buttons
         this.shadowRoot.querySelector('#goAvailable').addEventListener('click', () => this.changeState("Available"))
         this.shadowRoot.querySelector('#goUnavailable').addEventListener('click', () => this.changeState("Idle"))
-        this.shadowRoot.querySelector('#makeCallButton').addEventListener('click', () => this.makeCall())
+        this.shadowRoot.querySelector('#makeCallButton').addEventListener('click', () => this.makeCall(this.inputEl('entryPointId').value,this.inputEl('destination').value))
        
-
+        // fetching the latest for the Agent and mappibg it to corresponding label
         this.shadowRoot.querySelector('#userId').innerHTML = Desktop.agentStateInfo.latestData.agentName
         this.shadowRoot.querySelector('#userState').innerHTML = Desktop.agentStateInfo.latestData.subStatus
         this.shadowRoot.querySelector('#teamName').innerHTML = Desktop.agentStateInfo.latestData.teamName
         this.shadowRoot.querySelector('#extension').innerHTML = Desktop.agentStateInfo.latestData.dn
-        const auxCount = Desktop.agentStateInfo.latestData.idleCodes.length
-        let i = 0 
 
+        // Searching for default unavailble code in list of unavailable codes.
+        let i = 0 
+        const auxCount = Desktop.agentStateInfo.latestData.idleCodes.length
         while( i<=auxCount-1)
         {
 
@@ -110,6 +117,7 @@ state = {
         }
       }
 
+      // function to change the state on button click
       async changeState(s: "Available" | "Idle") {
         logger.info('moving to state ',s)
         logger.info('latestData',Desktop.agentStateInfo.latestData)
@@ -140,16 +148,16 @@ state = {
            
       }
 
-  
-        async getAgentInfo() {
+        // sample function to print latest data of agent
+         getAgentInfo() {
             const latestData = Desktop.agentStateInfo.latestData;
-            const agentName = Desktop.agentStateInfo.latestData.agentName
-            logger.info("learning-sample IdleCodes: " , latestData );
+            logger.info("learning-sample latestdata: " , latestData );
           }
 
 
-
+          // Subscribing to Agent contact event
           subscribeAgentContactDataEvents() {
+
             Desktop.agentContact.addEventListener("eAgentContact", (msg: Service.Aqm.Contact.AgentContact) =>
               logger.info("AgentContact eAgentContact: ", msg)
             );
@@ -278,12 +286,13 @@ state = {
             Desktop.dialer.addEventListener("eOutdialFailed", (msg: Service.Aqm.Contact.AgentContact) => logger.info(msg));
        }
 
-     makeCall(){
+     // function for making outdial call  
+     makeCall(entryPointId,destination){
        
       const outdial =  Desktop.dialer.startOutdial({
         data: {
-            entryPointId: this.inputEl('entryPointId').value ,
-            destination:  this.inputEl('destination').value ,
+            entryPointId: entryPointId , // analyzer id of outdial EP AXEWS1233.....
+            destination:  destination ,  // destination phone no. 
             direction: "OUTBOUND",
             attributes: {},
             mediaType: "telephoney",
